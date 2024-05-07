@@ -1,4 +1,4 @@
-# KaedeharaLu仓库
+# KaedeharaLu的喵崽js插件仓库
 本人为业余、喜好编程人士，仓库内js插件可以在喵崽使用，其它类型的崽请自行测试
 发现bug或有好的建议，欢迎发起issue
 
