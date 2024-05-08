@@ -13,8 +13,12 @@ export class Example2 extends plugin {
           fnc: 'recordMessageCount'
         },
         {
-          reg: '^#发言榜$', // 这里缺失了结束引号和$
+          reg: '^#发言榜$',
           fnc: 'showMessageRanking'
+        },
+        {
+          reg: '^#清除发言榜单$',
+          fnc: 'clearMessageRanking'
         }
       ]
     });
@@ -96,5 +100,22 @@ export class Example2 extends plugin {
       console.error('Error reading the data file:', error);
       return [];
     }
+  }
+
+  async clearMessageRanking(e){
+    const filePath = `./data/${e.group_id}_snots.json`;
+    if (!e.isMaster) {
+      await e.reply('你不是主人，不可以清除发言榜单!');
+      return;
+    }
+    
+    // 检查文件是否存在，如果存在则直接删除
+    if (fs.existsSync(filePath)){
+      fs.unlinkSync(filePath)
+      await e.reply('当前群聊发言榜单已清除！')
+    } else {
+      await e.reply('当前群聊发言榜单为空，无需清除！')
+    }
+    return;
   }
 }
