@@ -52,7 +52,6 @@ export class Example2 extends plugin {
   }
 
   async recordMessageCount(e) {
-    if(!e.group_id) return
     const filePath = `./data/snots/${e.group_id}_snots.json`;
     
     // 确保数据目录存在
