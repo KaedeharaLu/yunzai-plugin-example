@@ -61,7 +61,13 @@ export class Example2 extends plugin {
 
     let data = this.readData(e.group_id);
 
-    let nickname=e.member.card  || e.member.nickname
+     let nickname=''
+    if(e.group_id) {
+        nickname=e.member.card  || e.member.nickname
+    }else{
+        nickname=e.user_id
+    }
+
     // 查找当前用户是否已经有记录
     let userRecord = data.find(item => item.user_id === e.user_id);
     
