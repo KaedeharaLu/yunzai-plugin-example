@@ -31,7 +31,7 @@ export class napcat extends plugin {
     const httpAgent = new HttpProxyAgent(PROXY_HTTP);
     const httpsAgent = new HttpsProxyAgent(PROXY_HTTPS);
     /** 这里写napcat运行上级目录 */
-    const base_path = "C:\\napcat";
+    const base_path = "C:\\Users\\Administrator\\Desktop\\Yunzai-Bot";
     const api_url = "https://api.github.com/repos/NapNeko/NapCatQQ/releases/latest";
     const client = axios.create({
       /** 不用代理可以将下面这两行注释掉 */
@@ -44,6 +44,12 @@ export class napcat extends plugin {
     try {
       const resp = await client.get(api_url);
       const release_data = resp.data;
+      const latestVersion = release_data.tag_name;
+      const version = 'v' +  this.e.bot.version.app_version;
+      if (version === latestVersion) {
+        await e.reply(`已经是最新版了~\n当前版本:${version}`);
+        return;
+      }
       const win_asset = release_data.assets.find(asset => asset.name.includes('win'));
       if (!win_asset) {
         e.reply(`未找到对应release`);
