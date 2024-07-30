@@ -11,12 +11,10 @@ export class Example extends plugin {
                 {
                     reg: '^#购买彩票',
                     fnc: 'buyLottery'
-                },
-                {
+                }, {
                     reg: '^(#出卖彩票|#出售彩票|#售出彩票|#卖彩票)$',
                     fnc: 'sellLottery'
-                },
-                {
+                }, {
                     reg: '^#彩票开奖$',
                     fnc: 'draw'
                 }, {
@@ -83,7 +81,7 @@ export class Example extends plugin {
                 return
             }
             let temp = info[turns - 1].used
-            if (!temp || !temp.find(item => item.lotteryNum == num)) {
+            if (!temp || !temp.find(item => item.lotteryNum == lotteryNum)) { //或运算前为used数组为空，直接添加；或运算后为在temp中寻找相同的lotteryNum，买找到返回0，则可以添加
                 userLottery = {
                     "turns": turns,
                     "lotteryNum": lotteryNum,
@@ -141,9 +139,9 @@ export class Example extends plugin {
             return
         }
 
-        await e.reply(this.formatLottery(`已经售出信息如下的彩票`, nickname, userId, userLottery.lotteryNum, userLottery.groupId, userLottery.groupName, userLottery.time, 1), true)
+        await e.reply(this.formatLottery(`已经售出信息如下的彩票`, nickname, userId, userLottery.lotteryNum, userLottery.groupId, userLottery.groupName, userLottery.time, groupId == userLottery.groupId), true)
 
-        let newData = data.slice(0, data.length - 1) //过滤掉user 的 json中的购买记录
+        let newData = data.slice(0, data.length - 2) //过滤掉user 的 json中的购买记录
 
         //过滤掉info.json中used的数据
 
@@ -164,6 +162,11 @@ export class Example extends plugin {
         let person = thisTurn.used.find(item => item.lotteryNum == thisTurn.award)
         let history = this.readData(`./data/lottery/history.json`)
         let historyContent = {}
+
+        if(!info || !thisTurn || !history || !person){
+            await e.reply('错误!可能是从未运行过该插件或开过奖导致文件缺失，请尝试执行以下指令“#购买彩票”或“彩票开奖”',true)
+            return
+        }
 
         if (!person) { //person数组不存在，无人中奖
             await e.reply(`很遗憾，本轮无人买中，本次中奖号码为${info[info.length - 1].award}`)
@@ -197,7 +200,7 @@ export class Example extends plugin {
     async lotteryHistory(e) {
         const tip = '彩票历史记录如下:'
         let history = this.readData('./data/lottery/history.json')
-        let info=this.readData('./data/lottery/info.json')
+        let info = this.readData('./data/lottery/info.json')
         let replyInfo = {}
         let msg = ``
         if (!history) {
@@ -212,7 +215,7 @@ export class Example extends plugin {
         for (let i = 1; i <= history.length; i++) {
             replyInfo = {
                 "turns": history[i - 1].turns,
-                "personNum":info[info.length-1].used.length,
+                "personNum": info[info.length - 1].used.length,
                 "userId": history[i - 1].userId || "", //中奖为中奖人的信息，没中则为空
                 "nickname": history[i - 1].nickname || "",
                 "award": history[i - 1].award,
@@ -274,7 +277,7 @@ export class Example extends plugin {
             msg += `轮次: ${replyInfo.turns}\n`;
             msg += `彩票号码: ${replyInfo.lotteryNum}\n`;
             msg += `购买时间: ${replyInfo.time}\n`;
-            msg += `是否中奖: ${replyInfo.isDraw=="未开奖" ? '未开奖' : (replyInfo.isDraw ? '是' : '否')}\n`;
+            msg += `是否中奖: ${replyInfo.isDraw == "未开奖" ? '未开奖' : (replyInfo.isDraw ? '是' : '否')}\n`;
             msg += '-------------\n';
 
         }
@@ -315,7 +318,7 @@ export class Example extends plugin {
         const rootPath = `./data/lottery`;
         if (!fs.existsSync(rootPath)) {
             fs.mkdirSync(rootPath);
-            fs.mkdirSync(rootPath + '/' + 'user')
+            fs.mkdirSync(rootPath + '/user')
         }
 
         const path = `./data/lottery/info.json`;
@@ -356,7 +359,7 @@ export class Example extends plugin {
             }
             return [] //不存在则返回空数组
         } catch (error) {
-            e.reply('Error reading the data file:', error); //返回错误
+            log.warn('Error reading the data file:', error); //返回错误
             return [];
         }
     }
