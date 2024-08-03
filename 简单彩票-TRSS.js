@@ -163,8 +163,8 @@ export class Example extends plugin {
         let history = this.readData(`./data/lottery/history.json`)
         let historyContent = {}
 
-        if(!info || !thisTurn || !history || !person){
-            await e.reply('错误!可能是从未运行过该插件或开过奖导致文件缺失，请尝试执行以下指令“#购买彩票”或“彩票开奖”',true)
+        if(!info || !thisTurn){
+            await e.reply('错误!可能是从未运行过该插件导致文件缺失，请尝试执行以下指令“#购买彩票”',true)
             return
         }
 
@@ -203,19 +203,19 @@ export class Example extends plugin {
         let info = this.readData('./data/lottery/info.json')
         let replyInfo = {}
         let msg = ``
-        if (!history) {
-            await e.reply("暂无彩票记录")
+        if (!history.length) {
+            await e.reply("暂无彩票记录(也可能为第一轮且未开奖)",true)
             return
         }
 
         if (history.length > 20) { //长度大于20则截取最后20个
-            history = history.slice(history.length - 21, history.length - 1)
+            history = history.slice(history.length - 20, history.length)
         }
 
         for (let i = 1; i <= history.length; i++) {
             replyInfo = {
                 "turns": history[i - 1].turns,
-                "personNum": info[info.length - 1].used.length,
+                "personNum": info[i - 1].used.length,
                 "userId": history[i - 1].userId || "", //中奖为中奖人的信息，没中则为空
                 "nickname": history[i - 1].nickname || "",
                 "award": history[i - 1].award,
@@ -246,13 +246,13 @@ export class Example extends plugin {
         let lotteryInfo = this.readData(`./data/lottery/info.json`)
         let msg = ''
 
-        if (!userHistory) {
+        if (!userHistory.length) {
             await e.reply(`${nickname}(${userId})还未购买过彩票`, true)
             return
         }
 
         if (userHistory.length > 20) { //长度大于20则截取最后20个
-            userHistory = userHistory.slice(userHistory.length - 21, userHistory.length - 1)
+            userHistory = userHistory.slice(userHistory.length - 20, userHistory.length)
         }
 
         let replyInfo = {}
@@ -299,7 +299,7 @@ export class Example extends plugin {
         let data = this.readData(`./data/lottery/user/${userId}.json`)
         let userLottery = {}
 
-        if (!data) {
+        if (!data.length) {
             await e.reply(`您还从未购买过彩票`, true)
             return
         }
@@ -359,7 +359,7 @@ export class Example extends plugin {
             }
             return [] //不存在则返回空数组
         } catch (error) {
-            log.warn('Error reading the data file:', error); //返回错误
+            logger.warn('Error reading the data file:', error); //返回错误
             return [];
         }
     }
@@ -384,9 +384,9 @@ export class Example extends plugin {
 
     formatLottery(tip, nickname, userId, lotteryNum, groupId, groupName, time, isThisGroup) {
         if (isThisGroup) {
-            return `${tip}\n-------------\n用户信息:${nickname}(${userId})\n彩票号码:${lotteryNum}\n购买群号:${groupId}\n购买群名:${groupName}\n购买时间:${time}\n-------------`
+            return `${tip}\n-------------\n用户信息: ${nickname}(${userId})\n彩票号码: ${lotteryNum}\n购买群号: ${groupId}\n购买群名: ${groupName}\n购买时间: ${time}\n-------------`
         } else {
-            return `${tip}\n-------------\n用户信息:${nickname}(${userId})\n彩票号码:${lotteryNum}\n购买群号:非当前群聊购买\n购买群名:非当前群聊购买\n购买时间:${time}\n-------------`
+            return `${tip}\n-------------\n用户信息: ${nickname}(${userId})\n彩票号码: ${lotteryNum}\n购买群号: 非当前群聊购买\n购买群名: 非当前群聊购买\n购买时间: ${time}\n-------------`
         }
 
     }
