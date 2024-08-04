@@ -1,6 +1,10 @@
 # KaedeharaLu和FichteHerbst的云崽js插件仓库
 仓库内js插件无特殊说明可以在喵崽使用，标有```TRSS```的为TRSS可用插件，其它类型的崽请自行测试
 发现bug或有好的建议，欢迎发起issue
+<<<<<<< HEAD
+=======
+- 项目Github地址：[Gitee仓库](https://gitee.com/KaedeharaLu/yunzai-plugin-example)
+>>>>>>> parent of 037b3fe (错字)
 
 # 插件列表
 ## 发言统计
