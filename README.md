@@ -1,6 +1,7 @@
 # KaedeharaLu和FichteHerbst的云崽js插件仓库
 仓库内js插件无特殊说明可以在喵崽使用，标有```TRSS```的为TRSS可用插件，其它类型的崽请自行测试
 发现bug或有好的建议，欢迎发起issue
+- 项目Github地址：[Github仓库](https://github.com/KaedeharaLu/yunzai-plugin-example)
 
 # 插件列表
 ## 发言统计
@@ -92,3 +93,9 @@ NapCat为云崽的适配器，可以通过ws反向连接的方式连接应用端
 
 ### bug
 该插件未经严格测试，如有bug，请发起issue
+
+## 网页截图-TRSS 喵崽
+- 这个插件不涉及用户信息获取的差异，理论上TRSS和喵崽都可以使用（本人无喵崽实例，仅为推测）
+- 发送```#截图+url```则开始截图指定url。
+- 如果url不以```https://```开头，则会自动填充，所以如果没有配置ssl的网站应该会失败（不知道哪里找没ssl证书网站）
+- 加载网页有4s等待时间，截图15s超时，防止某些资讯类网页无限长一直截图（未经严格测试）
