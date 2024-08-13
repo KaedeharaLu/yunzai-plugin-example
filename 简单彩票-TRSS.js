@@ -74,9 +74,10 @@ export class Example extends plugin {
             await e.reply(this.formatLottery(`购买成功!信息如下`, nickname, userId, userLottery.lotteryNum, userLottery.groupId, userLottery.groupName, userLottery.time, 1), true)
         } else if (e.raw_message.length != 8) { //购买彩票号码大于3位数字
             await e.reply("彩票号码为3位数，请重新购买，此次不做记录", 1)
+            return
         } else { //指定
             lotteryNum = e.raw_message.slice(5).trim()
-            if (lotteryNum < 100) {
+            if (!(lotteryNum >= 100&&lotteryNum <= 999)) {
                 await e.reply(`号码应在100-999之间`, true)
                 return
             }
