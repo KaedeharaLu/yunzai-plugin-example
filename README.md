@@ -25,6 +25,7 @@
 - 以上操作均有检查文件是否存在的操作，一般不会出bug
 
 ## 自动更新NapCat
+- 最新版本的NapCat已经不可用，因为启动方式和文件名称改变，该插件暂未更新
 - 本插件为[tianyisama](https://github.com/tianyisama)制作，用于自动更新NapCat
 - 原项目地址：[yunzai-ncupdate](https://github.com/tianyisama/yunzai-ncupdate)
 ---------
