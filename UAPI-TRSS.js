@@ -45,7 +45,7 @@ export class UAPI extends plugin {
         msg += `API地址: https://uapis.cn/\n`
         msg += `----------\n`
         msg += `#天气+查询的地区中文名(例如北京市.可精确至县): 查询某地天气(不要出现空格)\n`
-        msg += `#ping+空格+ip/域名: ping某个域名/ip的延迟。api服务器地址本人不知道，结果仅作参考\n`
+        msg += `#ping+空格+ip/域名: ping某个域名/ip的延迟。api服务器地址默认湖北，结果仅作参考\n`
         msg += `#ua一言: 获取UAPI提供的一言\n`
         msg += `#热搜：查看多平台热搜榜\n`
         msg += `#随机表情+有兽焉/猫猫/二次元/坤坤/熊猫/外国人：获取对应的随机表情`
