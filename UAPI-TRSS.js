@@ -98,6 +98,7 @@ export class UAPI extends plugin {
         const host = e.raw_message.slice(6) //获得ping的host
         const url = `${api}${tip}?host=${host}` //拼接api地址
         let data = {} //定义返回数据为空
+        let ifStop=0
 
         // await e.reply(url)
 
@@ -106,10 +107,17 @@ export class UAPI extends plugin {
         }).catch(error => {
             e.reply(`ping错误：${error}`)
             logger.warn(`ping错误：${error}`)
-            return
+            ifStop=1
         })
 
-        //处理数据
+        await logger.warn(data)
+
+        if(ifStop){
+            return
+        }
+
+        // 处理数据
+
         if (data.code != 200) {
             await e.reply(`查询遇到错误，返回以下信息:\n----------\n错误码:${data.code}\n错误信息:${data.msg}`)
             logger.warn(`查询遇到错误，返回以下信息:\n----------\n错误码:${data.code}\n错误信息:${data.msg}`)
