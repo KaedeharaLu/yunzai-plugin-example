@@ -44,7 +44,7 @@ export class UAPI extends plugin {
         msg += `该插件调用API来自TechCat旗下的UAPI\n`
         msg += `API地址: https://uapis.cn/\n`
         msg += `----------\n`
-        msg += `#天气+查询的地区中文名(例如北京市.可精确至县): 查询某地天气(不要出现空格)\n`
+        msg += `#天气+查询的地区中文名(例如北京市，一定要带“市“，可精确至县): 查询某地天气(不要出现空格)\n`
         msg += `#ping+空格+ip/域名: ping某个域名/ip的延迟。api服务器地址默认湖北，结果仅作参考\n`
         msg += `#ua一言: 获取UAPI提供的一言\n`
         msg += `#热搜：查看多平台热搜榜\n`
@@ -58,6 +58,7 @@ export class UAPI extends plugin {
         const city = e.raw_message.slice(3).trim(); //获得城市名称
         const url = `${api}${tip}?name=${city}`; //拼接api地址
         let data = {}; //定义返回数据为空
+        let ifStop=0
 
         //发起Get请求
         await axios.get(url).then(response => {
@@ -65,8 +66,12 @@ export class UAPI extends plugin {
         }).catch(error => {
             e.reply(`查询天气遇到错误:${error}`)
             logger.warn(`查询天气遇到错误:${error}`)
-            return
+            ifStop=1
         })
+
+        if(ifStop){
+            return
+        }
 
         //处理数据
         if (data.code != 200) { //返回码不为200，即查询遇到错误
