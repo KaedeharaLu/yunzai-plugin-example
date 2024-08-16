@@ -25,28 +25,18 @@
 - 以上操作均有检查文件是否存在的操作，一般不会出bug
 
 ## 自动更新NapCat
-- 最新版本的NapCat已经不可用，因为启动方式和文件名称改变，该插件暂未更新
-- 本插件为[tianyisama](https://github.com/tianyisama)制作，用于自动更新NapCat
-- 原项目地址：[yunzai-ncupdate](https://github.com/tianyisama/yunzai-ncupdate)
----------
-以下为作者的[README.md](https://github.com/tianyisama/yunzai-ncupdate/blob/main/README.md)文件
-### yunzai-ncupdate
-适用于云崽的指令更新nc插件
-
-#### 须知
-- 本js仅适配1.5.2及以上版本的napcat
-
+### 须知
+- 当前该js插件仅适用于v2.0.0以后的版本，如果为1.x.x版本请先手动更新到v2.0.22（比较稳定）及以后的版本再使用本插件。
 - 使用前请添加依赖pnpm add (axios，http-proxy-agent，https-proxy-agent，adm-zip) -w
-
   `pnpm add axios -w`
   `pnpm add http-proxy-agent -w`
   `pnpm add https-proxy-agent -w`
   `pnpm add adm-zip -w`
   
-- 须在34行配置目录，例如：原先的运行目录是`E:\111\NapCat.win32.x64`，则填入`E:\\111`
+- 须在34行配置目录，例如：原先的运行目录是`E:\111\NapCat.Shell`，则填入`E:\\111\\NapCat.Shell`
+- 目录的最后一级名称一定要为`NapCat.Shell`
 
-- 目录的最后一级名称一定要为`NapCat.win32.x64`
-#### 使用方法
+### 使用方法
 放入plugins/example文件夹中即可
 ```
 介绍一下NapCat吧
