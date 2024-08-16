@@ -26,6 +26,7 @@
 
 ## 自动更新NapCat
 ### 须知
+- 目前由于NapCat的缺陷，自动重启不可用，再提示“更新完成”后，请手动重启NapCat程序。
 - 当前该js插件仅适用于v2.0.0以后的版本，如果为1.x.x版本请先手动更新到v2.0.22（比较稳定）及以后的版本再使用本插件。
 - 使用前请添加依赖pnpm add (axios，http-proxy-agent，https-proxy-agent，adm-zip) -w
   `pnpm add axios -w`
