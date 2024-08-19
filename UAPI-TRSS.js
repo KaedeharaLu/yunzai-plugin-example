@@ -180,20 +180,31 @@ export class UAPI extends plugin {
         for (let i = 1; i <= data.length; i++) {
             // e.reply('1')
             let temp = data[i - 1]
-            // logger.warn(temp)
+            logger.warn(temp)
 
             // if (temp.success != true || temp.code != 200) { //不为true即获取失败
             //     msg.push(`${type[i - 1]}获取失败`)
             //     continue
             // }
 
-            let tempMsg = `来源: ${temp.title}\n标题: ${temp.subtitle}\n更新时间: ${temp.update_time}\n----------\n`
+            let tempMsg = `来源: ${temp.title}\n标题: ${temp.subtitle}\n更新时间: ${temp.update_time}\n---------------\n`
 
             temp = temp.data
             if (temp.length > 10) temp = temp.slice(0, 10) //超出10个只取前十
 
             for (let i = 1; i <= temp.length; i++) {
-                tempMsg += `${i}: ${temp[i - 1].title}\n`
+                tempMsg += `排名: ${i}\n`
+                tempMsg += `标题: ${temp[i - 1].title}\n`
+                if(temp[i-1].hot){
+                    tempMsg+=`热度: ${temp[i-1].hot}\n`
+                }
+                if(temp[i-1].desc){
+                    tempMsg+=`描述: ${temp[i-1].desc}\n`
+                }
+                if(temp[i-1].url){
+                    tempMsg+=`网址: ${encodeURI(temp[i-1].url)}\n`
+                }
+                tempMsg+=`-------\n`
             }
 
             msg.push(tempMsg)
