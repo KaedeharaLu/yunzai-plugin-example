@@ -37,8 +37,8 @@
 ```
 ./data/snots
         |-qq号1
-            |-snots.json
-            |-settings.json
+        |   |-snots.json
+        |   |-settings.json
         |-qq号1
             |-snots.json
             |-settings.json
