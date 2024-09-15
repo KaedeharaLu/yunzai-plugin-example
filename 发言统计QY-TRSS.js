@@ -2,8 +2,6 @@ import fs from 'fs/promises';
 
 // 定义数据目录和备份目录
 const DATA_DIR = './data/snots/';
-const BACKUP_DIR_A = './data/backup_snots_A';
-const BACKUP_DIR_G = './data/backup_snots_G';
 
 // 定义错误信息
 const ERROR_NOT_MASTER = '你可不是主人，我才不听你的呢！';
@@ -93,6 +91,14 @@ export class Example2 extends plugin {
             } catch {
                 await fs.writeFile(settingsFilePath, JSON.stringify(this.settings, null, 4), 'utf-8');
             }
+
+            const snotsFilePath = `${dirPath}/snots.json`; // 定义 snots.json 的路径
+            try {
+                await fs.access(snotsFilePath); // 检查 snots.json 文件是否存在
+            } catch {
+                // 如果不存在，就创建一个空的数组文件
+                await fs.writeFile(snotsFilePath, JSON.stringify([], null, 4), 'utf-8');
+            }
         } catch (error) {
             console.error('创建目录时出错:', error);
         }
@@ -140,21 +146,9 @@ export class Example2 extends plugin {
         e.reply(`成功设置排行榜单人数为${this.settings.rand}`);
     }
 
-    // 生成排名信息
-    generateRankingMessage(data, totalMessages) {
-        // 获取前10名用户信息
-        const topUsers = data.slice(0, 10).map((user, index) => {
-            const percentage = ((user.number / totalMessages) * 100).toFixed(2);
-            return `\n第${index + 1}名：${user.nickname || `(${user.user_id})`} · ${user.number}次（占比${percentage}%）`;
-        }).join('');
-
-        // 返回完整的排行榜前10名信息
-        return `排行榜前10名：${topUsers}`;
-    }
-
-    // 生成排名信息
+    // 获取排名榜单
     async showMessageRanking(e) {
-        const data = await this.readData(e, e.group_id); // 确保获取数据的方式正确
+        const data = await this.readData(e, e.group_id);
 
         if (data.length === 0) {
             e.reply('本群好像还没人说过话呢~');
@@ -175,30 +169,23 @@ export class Example2 extends plugin {
         let userMessages = 0;
         let userPercentage = '0.00%';
 
+        const userRecord = data.find(item => item.user_id === e.user_id);
+        if (userRecord) {
+            userMessages = userRecord.number;
+            userRank = data.indexOf(userRecord) + 1;
+            if (totalMessages > 0) {
+                userPercentage = ((userMessages / totalMessages) * 100).toFixed(2) + '%';
+            }
+        }
+
         for (let i = 0; i < topUsers.length; i++) {
             const user = topUsers[i];
             const percentage = ((user.number / totalMessages) * 100).toFixed(2);
-
-            if (user.user_id === e.user_id) {
-                userRank = i + 1;
-                userMessages = user.number;
-                userPercentage = percentage;
-            }
-
             msg.push(`\n第${i + 1}名：${user.nickname || `(${user.user_id})`}·${user.number}次（占比${percentage}%）`);
         }
 
-        if (userRank === -1) {
-            const userRecord = data.find(item => item.user_id === e.user_id);
-            if (userRecord) {
-                userMessages = userRecord.number;
-                userPercentage = ((userMessages / totalMessages) * 100).toFixed(2);
-                userRank = data.length;
-            }
-        }
-
         if (userRank !== -1) {
-            msg.push(`\n━━━━━━━━━━━━━━\n你的排名：第${userRank}名\n你的发言次数：${userMessages}次\n你的发言占比：${userPercentage}%`);
+            msg.push(`\n━━━━━━━━━━━━━━\n你的排名：第${userRank}名\n你的发言次数：${userMessages}次\n你的发言占比：${userPercentage}`);
         } else {
             msg.push(`\n━━━━━━━━━━━━━━\n你还没有发言记录。`);
         }
@@ -219,6 +206,7 @@ export class Example2 extends plugin {
     async recordMessageCount(e) {
         const userId = e.user_id;
         const filePath = `./data/snots/${e.group_id}/snots.json`;
+
         await this.ensureDirExists(e.group_id);
 
         let data = await this.getMessageData(e.group_id);
@@ -258,7 +246,7 @@ export class Example2 extends plugin {
             return JSON.parse(data);
         } catch {
             console.error('设置文件不存在或读取错误');
-            return { isArr: 1, rand: 10 }; // 返回默认设置
+            return { isArr: 1, rand: 10 };
         }
     }
 
