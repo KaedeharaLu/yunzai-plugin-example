@@ -92,11 +92,10 @@ export class Example2 extends plugin {
                 await fs.writeFile(settingsFilePath, JSON.stringify(this.settings, null, 4), 'utf-8');
             }
 
-            const snotsFilePath = `${dirPath}/snots.json`; // 定义 snots.json 的路径
+            const snotsFilePath = `${dirPath}/snots.json`;
             try {
-                await fs.access(snotsFilePath); // 检查 snots.json 文件是否存在
+                await fs.access(snotsFilePath);
             } catch {
-                // 如果不存在，就创建一个空的数组文件
                 await fs.writeFile(snotsFilePath, JSON.stringify([], null, 4), 'utf-8');
             }
         } catch (error) {
@@ -231,10 +230,14 @@ export class Example2 extends plugin {
 
         try {
             const data = await fs.readFile(filePath, 'utf-8');
+            if (data.trim() === "") {
+                console.warn(`文件为空: ${filePath}`);
+                return []; // 返回空数组
+            }
             return JSON.parse(data);
         } catch (error) {
             console.error('读取数据时出错:', error);
-            return [];
+            return []; // 返回空数组
         }
     }
 
@@ -243,9 +246,13 @@ export class Example2 extends plugin {
         const filePath = `${DATA_DIR}${groupId}/settings.json`;
         try {
             const data = await fs.readFile(filePath, 'utf-8');
+            if (data.trim() === "") {
+                console.warn(`设置文件为空: ${filePath}`);
+                return { isArr: 1, rand: 10 };
+            }
             return JSON.parse(data);
-        } catch {
-            console.error('设置文件不存在或读取错误');
+        } catch (error) {
+            console.error('设置文件不存在或读取错误', error);
             return { isArr: 1, rand: 10 };
         }
     }
@@ -333,16 +340,6 @@ export class Example2 extends plugin {
             }
         } catch {
             e.reply('指定群组的发言榜单文件不存在。');
-        }
-    }
-
-    // 保存群组设置
-    async saveSettings(groupId) {
-        const filePath = `./data/snots/${groupId}/settings.json`;
-        try {
-            await fs.writeFile(filePath, JSON.stringify(this.settings, null, 4), 'utf-8');
-        } catch (error) {
-            console.error('写入设置文件时出错:', error);
         }
     }
 }
