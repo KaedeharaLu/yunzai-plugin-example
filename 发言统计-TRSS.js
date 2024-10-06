@@ -129,7 +129,12 @@ export class Example2 extends plugin {
   }
 
   check(e){// 确保数据目录存在
-    let filePath=`./data/snots/${e.group_id}`
+    let filePath=`./data/snots/`
+    if (!fs.existsSync(filePath)) {
+      fs.mkdirSync(filePath);
+    }
+    
+    filePath=`./data/snots/${e.group_id}`
     if (!fs.existsSync(filePath)) {
       fs.mkdirSync(filePath);
       settings={
@@ -186,12 +191,6 @@ export class Example2 extends plugin {
   }
 
   async recordMessageCount(e) {
-    if(e.raw_message==6){
-      e.reply('7')
-    }else if(e.raw_message==666){
-      e.reply('777')
-    }
-
     const filePath = `./data/snots/${e.group_id}/snots.json`;
 
     this.check(e)
