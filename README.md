@@ -160,21 +160,21 @@ NapCat为云崽的适配器，可以通过ws反向连接的方式连接应用端
 
 **注：以下指令不得键入任何空格，否则可能出错**
 ### 使用方法:
-#kimi+问题 : 向Kimi提问<br>
-#设置kimi秘钥+Key(不包括+号) : 设置自己的ApiKey(一定私聊机器人)<br>
-#km清空对话 : 清除自己和Kimi的对话记录<br>
+#kimi+问题 : 向Kimi提问
+#设置kimi秘钥+Key(不包括+号) : 设置自己的ApiKey(一定私聊机器人)
+#km清空对话 : 清除自己和Kimi的对话记录
 #km对话历史 : 查看与Kimi的对话历史
 
 ### 预设设置:
-#km预设查看/#km预设列表 : 查看存储的预设列表<br>
-#km预设删除+数字(不包括+号) : 删除对应编号的预设<br>
-#km预设使用+数字(不包括+号) : 使用对应编号的预设<br>
-#km预设添加+内容(不包括+号) : 将对应预设内容添加到记录<br>
-#km预设清空 : 清空自己的预设历史(自动恢复到默认预设)<br>
+#km预设查看/#km预设列表 : 查看存储的预设列表
+#km预设删除+数字(不包括+号) : 删除对应编号的预设
+#km预设使用+数字(不包括+号) : 使用对应编号的预设
+#km预设添加+内容(不包括+号) : 将对应预设内容添加到记录
+#km预设清空 : 清空自己的预设历史(自动恢复到默认预设)
 
 ### ApiKey
 因为KimiAPI的免费用户限制比较大(详情见下图)，所以要使用KimiAPI必须先设置ApiKey。要获取ApiKey请前往https://platform.moonshot.cn/console/api-keys，然后```#设置kimi秘钥+Key(不包括+号) : 设置自己的ApiKey(一定私聊机器人)```<br>
-![KimiAPI限速][1]<br>
+![KimiAPI限速][1]
 此图来源[官方API文档][https://platform.moonshot.cn/docs/pricing/limits]
 
 [1]: ./assets/image/KimiAPI限速.png

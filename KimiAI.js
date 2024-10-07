@@ -289,7 +289,7 @@ export class KimiAI extends plugin {
         key = data.key
 
         if (!key) {
-            // await e.reply(`当前用户无KimiAI的APIkey，请前往https://platform.moonshot.cn/console/api-keys创建后，发送#设置kimi秘钥+apikey设置`)
+            await e.reply(`当前用户无KimiAI的APIkey，请前往https://platform.moonshot.cn/console/api-keys创建后，发送#设置kimi秘钥+apikey设置`)
             return
         }
 
