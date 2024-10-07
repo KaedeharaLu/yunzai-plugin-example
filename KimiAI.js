@@ -127,7 +127,7 @@ export class KimiAI extends plugin {
             await e.reply(`已将预设恢复默认!请注意是否清空对话历史!`, true)
         } else if (num > 0 && num <= data.presetList.length - 1) { //在预设范围内设置
             data.preset = num
-            await e.reply(`已将预设设置为第${num}个!请注意是否清空对话历史!`, true)
+            await e.reply(`已将预设设置为第${num}个!请注意是否需要使用"#km清空对话"来清空对话历史!`, true)
         } else {//不在上面两种情况就说明不是正确情况
             await e.reply(`不正确的输入!`, true)
             return
@@ -161,7 +161,7 @@ export class KimiAI extends plugin {
         data.preset = 0 //重置到指定为0
         data.presetList = defaultPreset //只剩下默认预设-->变相清空预设
         fs.writeFileSync(filepath, JSON.stringify(data, null, 4), 'utf-8') //写回数据
-        await e.reply(`清除清除成功!自动切换回默认预设!请注意是否清空对话历史!`, true)
+        await e.reply(`清除清除成功!自动切换回默认预设!请注意是否需要使用"#km清空对话"来清空对话历史!`, true)
         return
     }
 
