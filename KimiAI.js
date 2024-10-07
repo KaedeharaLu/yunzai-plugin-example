@@ -372,14 +372,9 @@ export class KimiAI extends plugin {
             await e.reply(`设置成功！`, true)
         } else {//存在则覆盖旧的
             let data = JSON.parse(fs.readFileSync(filepath, 'utf-8'))
-            if (data.key == "") { //本身无则添加
-                data.key = userkey
-                await e.reply(`添加成功`, true)
-            } else { //本身有则覆盖
-                data.key = userkey
-                await e.reply(`成功覆盖旧的key`, true)
-            }
-            fs.writeFileSync(filepath, JSON.stringify(defaultSetiings, null, 4), 'utf-8')
+            data.key = userkey
+            await e.reply(`设置成功`, true)
+            fs.writeFileSync(filepath, JSON.stringify(data, null, 4), 'utf-8')
         }
 
         return
