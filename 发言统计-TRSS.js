@@ -2,7 +2,11 @@ import fs from 'fs';
 
 let settings=[]
 
-export class Example2 extends plugin {
+Bot.on("message.group", e => {
+  if (e.message) { (new Rank()).recordMessageCount(e) }
+})
+
+export class Rank extends plugin {
   constructor() {
     super({
       name: '发言次数统计',
@@ -15,7 +19,7 @@ export class Example2 extends plugin {
           fnc: 'recordMessageCount'
         },
         {
-          reg: '^#?发言榜$',
+          reg: '^(#?水群榜|#?发言榜|#?B话榜)$',
           fnc: 'showMessageRanking'
         },
         {
@@ -23,13 +27,13 @@ export class Example2 extends plugin {
           fnc: 'clearMessageRanking'
         },
         {
-          reg: '^#发言榜设置排行',
+          reg: '^(#水群榜|#发言榜|#B话榜)设置排行',
           fnc:'setRand'
         },{
-          reg: '^#发言榜设置转发',
+          reg: '^(#水群榜|#发言榜|#B话榜)设置转发',
           fnc:'setArr'
         },{
-          reg:'^#发言榜帮助',
+          reg:'^(#?水群榜|#?发言榜|#?B话榜)帮助',
           fnc:'help'
         }
       ]
@@ -129,12 +133,7 @@ export class Example2 extends plugin {
   }
 
   check(e){// 确保数据目录存在
-    let filePath=`./data/snots/`
-    if (!fs.existsSync(filePath)) {
-      fs.mkdirSync(filePath);
-    }
-    
-    filePath=`./data/snots/${e.group_id}`
+    let filePath=`./data/snots/${e.group_id}`
     if (!fs.existsSync(filePath)) {
       fs.mkdirSync(filePath);
       settings={
