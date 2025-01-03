@@ -14,10 +14,10 @@ export class Rank extends plugin {
       event: 'message',
       priority: -1,
       rule: [
-        {
-          reg: '',
-          fnc: 'recordMessageCount'
-        },
+        // {
+        //   reg: '',
+        //   fnc: 'recordMessageCount'
+        // },
         {
           reg: '^(#?水群榜|#?发言榜|#?B话榜)$',
           fnc: 'showMessageRanking'
@@ -35,9 +35,166 @@ export class Rank extends plugin {
         },{
           reg:'^(#?水群榜|#?发言榜|#?B话榜)帮助',
           fnc:'help'
+        },{
+          reg:'^#更新发言榜结构$',
+          fnc:'updateStructure'
+        },{
+          reg:'^(#?水群榜|#?发言榜|#?B话榜)日榜$',
+          fnc:'dailyRank'
+        },{
+          reg:'^(#?水群榜|#?发言榜|#?B话榜)月榜$',
+          fnc:'monthlyRank'
         }
       ]
     });
+  }
+
+  async monthlyRank(e){
+    const data = this.readData(e,e.group_id);
+
+    if (data.length === 0) {
+      e.reply('本群好像还没人说过话呢~');
+      return true;
+    }
+
+    let monthlyData=[]
+    let time=this.getTime()
+    for(let i=0;i<=data.length-1;i++){ //整理数据
+      let sum=0
+      for(let j=0;j<=data[i].history.length-1;j++){
+        let thisData=data[i].history[j]
+        if(thisData.month==time.month&&thisData.year==time.year){ //是本月数据
+          sum+=thisData.number
+        }
+      }
+      if(sum>0){ //当月榜单存在
+        let temp={
+          "nickname":"",
+          "number":sum
+        }
+        if ((!data[i].nickname)||(data[i].nickname.trim()=='')) {
+          temp.nickname=`[${data[i].user_id}]`
+        } else {
+          temp.nickname=`『${data[i].nickname}』`
+        }
+        monthlyData.push(temp)
+      }
+    }
+
+    if(!monthlyData){
+      e.reply("你是本群本月第一个发言的~",true)
+      return
+    }
+    // 计算总消息数
+    const totalMessages = monthlyData.reduce((sum, user) => sum + user.number, 0);
+    const info = await this.e.group.getInfo()
+    const groupname = info.group_name
+    let groupid = e.group_id
+    let msg = [`群名: ${groupname}\n群号: ${groupid}\n本月发言总数: ${totalMessages}\n月份: ${time.year}年${time.month}月\n━━━━━━━━━━━━━━\n本群发言榜:\n`];
+
+    // 排序并截取
+    monthlyData.sort((a, b) => b.number - a.number);
+    var topUsers
+    topUsers = monthlyData.slice(0, settings.rand);
+    
+
+    for (let i = 0; i < topUsers.length; i++) {
+      const user = topUsers[i];
+      // 计算发言比例，并保留两位小数
+      const percentage = ((user.number / totalMessages) * 100).toFixed(2);
+      msg.push(`\n第${i + 1}名：${user.nickname}·${user.number}次（占比${percentage}%）`);
+    }
+    if(!settings.isArr){
+      await e.reply(msg.join(''));
+    }else{
+      await e.reply(Bot.makeForwardArray([msg]));
+    }
+    return
+  }
+
+  async dailyRank(e){
+    const data = this.readData(e,e.group_id);
+
+    if (data.length === 0) {
+      e.reply('本群好像还没人说过话呢~');
+      return true;
+    }
+
+    let dailyData=[]
+    let time=this.getTime()
+    for(let i=0;i<=data.length-1;i++){ //整理数据
+      let thisHistory=data[i].history.find(item=>(item.year==time.year&&item.month==time.month&&item.day==time.day)) //匹配当天的榜单
+      if(thisHistory){ //当天榜单存在
+        let temp={
+          "nickname":"",
+          "number":thisHistory.number
+        }
+        if ((!data[i].nickname)||(data[i].nickname.trim()=='')) {
+          temp.nickname=`[${data[i].user_id}]`
+        } else {
+          temp.nickname=`『${data[i].nickname}』`
+        }
+        dailyData.push(temp)
+      }
+    }
+
+    if(!dailyData){
+      e.reply("你是本群本日第一个发言的~",true)
+      return
+    }
+    // 计算总消息数
+    const totalMessages = dailyData.reduce((sum, user) => sum + user.number, 0);
+    const info = await this.e.group.getInfo()
+    const groupname = info.group_name
+    let groupid = e.group_id
+    let msg = [`群名: ${groupname}\n群号: ${groupid}\n当日发言总数: ${totalMessages}\n日期: ${time.year}年${time.month}月${time.day}日\n━━━━━━━━━━━━━━\n本群发言榜:\n`];
+
+    // 排序并截取
+    dailyData.sort((a, b) => b.number - a.number);
+    var topUsers
+    topUsers = dailyData.slice(0, settings.rand);
+    
+
+    for (let i = 0; i < topUsers.length; i++) {
+      const user = topUsers[i];
+      // 计算发言比例，并保留两位小数
+      const percentage = ((user.number / totalMessages) * 100).toFixed(2);
+      msg.push(`\n第${i + 1}名：${user.nickname}·${user.number}次（占比${percentage}%）`);
+    }
+    if(!settings.isArr){
+      await e.reply(msg.join(''));
+    }else{
+      await e.reply(Bot.makeForwardArray([msg]));
+    }
+    return
+  }
+
+  updateStructure(e){
+    this.check(e)
+    let data = this.readData(e,e.group_id);
+    const filePath = `./data/snots/${e.group_id}/snots.json`;
+    // logger.info(data)
+    let time=this.getTime()
+    let newData=[]
+    for(let i=0;i<data.length-1;i++){
+      let newArray={
+        "user_id":data[i].user_id,
+        "nickname":data[i].nickname,
+        "total":data[i].number,
+        "history":[
+          {
+            "year":time.year,
+            "month":time.month,
+            "day":time.day,
+            "number":data[i].number
+          }
+        ]
+      }
+      newData.push(newArray)
+    }
+    fs.writeFileSync(filePath,JSON.stringify(newData,null,4),'utf-8')
+
+    e.reply("发言榜数据成功更新到新结构！")
   }
 
   async help(e){
@@ -53,7 +210,7 @@ export class Rank extends plugin {
     msg+=`(看看谁是B话王)\n`
     msg+=`----------\n`
     msg+=`主人可用:\n`
-    msg+=`1."#清除发言榜单*":清除当前群聊的发言记录\n`
+    msg+=`1."#清除发言榜单":清除当前群聊的发言记录\n`
     msg+=`2."#发言榜设置排行+大于0的数字":设置最后显示的榜单人数\n`
     msg+=`3."#发言榜设置转发+0/1":设置是否以转发消息的形式发送，防止刷屏\n`
     msg+=`********************`
@@ -159,7 +316,7 @@ export class Rank extends plugin {
     }
 
     // 计算总消息数
-    const totalMessages = data.reduce((sum, user) => sum + user.number, 0);
+    const totalMessages = data.reduce((sum, user) => sum + user.total, 0);
     const info = await this.e.group.getInfo()
     const groupname = info.group_name
     let groupid = e.group_id
@@ -174,11 +331,11 @@ export class Rank extends plugin {
     for (let i = 0; i < topUsers.length; i++) {
       const user = topUsers[i];
       // 计算发言比例，并保留两位小数
-      const percentage = ((user.number / totalMessages) * 100).toFixed(2);
-      if ((!user.nickname)||(user.nickname.trim()==' ')) {
-        msg.push(`\n第${i + 1}名：(${user.user_id})·${user.number}次（占比${percentage}%）`);
+      const percentage = ((user.total / totalMessages) * 100).toFixed(2);
+      if ((!user.nickname)||(user.nickname.trim()=='')) {
+        msg.push(`\n第${i + 1}名：[${user.user_id}]·${user.total}次（占比${percentage}%）`);
       } else {
-        msg.push(`\n第${i + 1}名：${user.nickname}·${user.number}次（占比${percentage}%）`);
+        msg.push(`\n第${i + 1}名：『${user.nickname}』·${user.total}次（占比${percentage}%）`);
       }
     }
     if(!settings.isArr){
@@ -189,14 +346,18 @@ export class Rank extends plugin {
     return
   }
 
-  async recordMessageCount(e) {
+  async recordMessageCount(e){
     const filePath = `./data/snots/${e.group_id}/snots.json`;
 
     this.check(e)
     
     let data = this.readData(e,e.group_id);
 
-    let nickname = ''
+    if(data.length>0&&(!data[0].total)){ //旧结构，需要更新
+      this.updateStructure(e)
+    }
+
+    let nickname = ""
     if (e.group_id) {
       nickname = e.member.card || e.member.nickname
     } else {
@@ -205,24 +366,48 @@ export class Rank extends plugin {
 
     // 查找当前用户是否已经有记录
     let userRecord = data.find(item => item.user_id === e.user_id);
+    const time=this.getTime()
 
     if (userRecord) {
-      // 如果有记录，则增加发言次数
-      userRecord.number++;
+      let history=userRecord.history.find(item => (item.year==time.year&&item.month==time.month&&item.day==time.day)) //日期匹配
+      userRecord.total+=1 //发言总数
 
-      // 检查昵称是否一致，若不一致则更新
-      if (userRecord.nickname != nickname) {
-        userRecord.nickname = nickname;
+      if(history){ //当天有记录
+        history.number+=1
+      }else{ //当天未发言，则创建
+        let newHistory={
+          "year": time.year,
+          "month": time.month,
+          "day": time.day,
+          "number": 1
+        }
+        userRecord.history.push(newHistory)
       }
 
+      // 检查昵称是否一致，若不一致则更新
+      if (userRecord.nickname != nickname || !userRecord.nickname) {
+        userRecord.nickname = nickname;
+      }
     } else {
       // 如果没有记录，则添加新用户记录
-      userRecord = { user_id: e.user_id, nickname: nickname, number: 1 };
+      userRecord = {
+        "user_id": e.user_id,
+        "nickname": nickname,
+        "total":1,
+        "history":[
+          {
+            "year":time.year,
+            "month":time.month,
+            "day":time.day,
+            "number":1
+          }
+        ] 
+      };
       data.push(userRecord);
     }
 
     // 将更新后的数据写回到文件
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 3), 'utf-8');
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 4), 'utf-8');
 
     return false;
   }
@@ -269,5 +454,24 @@ export class Rank extends plugin {
       await e.reply('当前群聊发言榜单为空，无需清除！')
     }
     return;
+  }
+
+  getTime() {
+    let currentDate = new Date();
+    let year = currentDate.getFullYear();
+    let month = ('0' + (currentDate.getMonth() + 1)).slice(-2);
+    let day = ('0' + currentDate.getDate()).slice(-2);
+    let hours = ('0' + currentDate.getHours()).slice(-2);
+    let minutes = ('0' + currentDate.getMinutes()).slice(-2);
+    let seconds = ('0' + currentDate.getSeconds()).slice(-2);
+    let time={
+      "year":Number(year),
+      "month":Number(month),
+      "day":Number(day),
+      "hours":Number(hours),
+      "minutes":Number(minutes),
+      "seconds":Number(seconds)
+    }
+    return time
   }
 }
