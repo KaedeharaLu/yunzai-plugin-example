@@ -12,41 +12,145 @@ export class Rank extends plugin {
       name: '发言次数统计',
       dsc: '统计并显示群成员的总发言次数。',
       event: 'message',
-      priority: -1,
+      priority: -100000,
       rule: [
-        // {
-        //   reg: '',
-        //   fnc: 'recordMessageCount'
-        // },
         {
           reg: '^(#?水群榜|#?发言榜|#?B话榜)$',
           fnc: 'showMessageRanking'
         },
         {
-          reg: '^#清除发言榜单*$',
+          reg: '^#清除发言榜单$',
           fnc: 'clearMessageRanking'
         },
         {
           reg: '^(#水群榜|#发言榜|#B话榜)设置排行',
           fnc:'setRand'
-        },{
+        },
+        {
           reg: '^(#水群榜|#发言榜|#B话榜)设置转发',
           fnc:'setArr'
-        },{
+        },
+        {
           reg:'^(#?水群榜|#?发言榜|#?B话榜)帮助',
           fnc:'help'
-        },{
-          reg:'^#更新发言榜结构$',
-          fnc:'updateStructure'
-        },{
+        },
+        // {
+        //   reg:'^#更新发言榜结构$',
+        //   fnc:'updateStructure'
+        // },
+        {
           reg:'^(#?水群榜|#?发言榜|#?B话榜)日榜$',
           fnc:'dailyRank'
-        },{
+        },
+        {
           reg:'^(#?水群榜|#?发言榜|#?B话榜)月榜$',
           fnc:'monthlyRank'
+        },
+        {
+          reg:'^(#?水群榜|#?发言榜|#?B话榜)周榜$',
+          fnc:'weeklyRank'
         }
       ]
     });
+  }
+
+  getWeekOfMonth(year,month,day){
+    // 月份需要减去1，因为 JavaScript 中的月份是从0开始的（0表示1月，1表示2月，以此类推）
+    const currentDate = new Date(year, month - 1, day);
+
+    // 获取本月的第一天
+    const firstDayOfMonth = new Date(year, month - 1, 1);
+ 
+    // 获取本月第一天是星期几 (0 是周日，1 是周一，...，6 是周六)
+    const dayOfWeek = firstDayOfMonth.getDay();
+ 
+    // 计算当前日期是本月的第几周
+    // 通过计算当前日期距离本月第一天的天数差，再除以 7 得到周数
+    const dayOfMonth = currentDate.getDate();
+    const weekNumber = Math.ceil((dayOfMonth + dayOfWeek) / 7);
+ 
+    return weekNumber;
+  }
+
+  autoGetWeekOfMonth(date) { //计算当前的周数
+    // 获取当前日期
+    const currentDate = new Date(date);
+
+    // 获取本月的第一天
+    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+
+    // 获取本月第一天是星期几 (0 是周日，1 是周一，...，6 是周六)
+    const dayOfWeek = firstDayOfMonth.getDay();
+
+    // 计算当前日期是本月的第几周
+    // 通过计算当前日期距离本月第一天的天数差，再除以 7 得到周数
+    const dayOfMonth = currentDate.getDate();
+    const weekNumber = Math.ceil((dayOfMonth + dayOfWeek) / 7);
+
+    return weekNumber;
+  }
+
+  async weeklyRank(e){
+    const data = this.readData(e,e.group_id);
+
+    if (data.length === 0) {
+      e.reply('本群好像还没人说过话呢~');
+      return true;
+    }
+
+    let weeklyData=[]
+    let time=this.getTime()
+    for(let i=0;i<=data.length-1;i++){ //整理数据
+      let sum=0
+      for(let j=0;j<=data[i].history.length-1;j++){
+        let thisData=data[i].history[j]
+        if(thisData.month==time.month&&thisData.year==time.year&&thisData.week==time.week){ //是本周数据
+          sum+=thisData.number
+        }
+      }
+      if(sum>0){ //本周榜单存在
+        let temp={
+          "nickname":"",
+          "number":sum
+        }
+        if ((!data[i].nickname)||(data[i].nickname.trim()=='')) {
+          temp.nickname=`[${data[i].user_id}]`
+        } else {
+          temp.nickname=`『${data[i].nickname}』`
+        }
+        weeklyData.push(temp)
+      }
+    }
+
+    if(!weeklyData){
+      e.reply("你是本群本周第一个发言的~",true)
+      return
+    }
+    // 计算总消息数
+    const totalMessages = weeklyData.reduce((sum, user) => sum + user.number, 0);
+    const info = await this.e.group.getInfo()
+    const groupname = info.group_name
+    let groupid = e.group_id
+    let msg = [`群名: ${groupname}\n群号: ${groupid}\n本周发言总数: ${totalMessages}\n${time.year}年${time.month}月第${time.week}周\n━━━━━━━━━━━━━━\n本群发言榜:\n`];
+
+    // 排序并截取
+    weeklyData.sort((a, b) => b.number - a.number);
+    var topUsers
+    topUsers = weeklyData.slice(0, settings.rand);
+    
+
+    for (let i = 0; i < topUsers.length; i++) {
+      const user = topUsers[i];
+      // 计算发言比例，并保留两位小数
+      const percentage = ((user.number / totalMessages) * 100).toFixed(2);
+      msg.push(`\n第${i + 1}名：${user.nickname}·${user.number}次（占比${percentage}%）`);
+    }
+    if(!settings.isArr){
+      await e.reply(msg.join(''));
+    }else{
+      await e.reply(Bot.makeForwardArray([msg]));
+    }
+    return
   }
 
   async monthlyRank(e){
@@ -186,6 +290,7 @@ export class Rank extends plugin {
             "year":time.year,
             "month":time.month,
             "day":time.day,
+            "week":time.week,
             "number":data[i].number
           }
         ]
@@ -199,21 +304,24 @@ export class Rank extends plugin {
 
   async help(e){
     let msg=''
-    msg+=`********************\n`
+    msg+=`**********************************\n`
     msg+=`欢迎使用由KaedeharaLu开发的发言榜插件\n`
-    msg+=`********************\n`
+    msg+=`**********************************\n`
     msg+=`使用方法:\n`
     msg+=`----------\n`
     msg+=`所有人:\n`
     msg+=`1.每次发言都会记录\n`
-    msg+=`2.使用"#发言榜"来查看当前群聊的发言榜单\n`
-    msg+=`(看看谁是B话王)\n`
+    msg+=`2.#发言榜 : 查看当前群聊的发言总榜单\n`
+    msg+=`3.#发言榜月榜 : 查看当前群聊本月的发言榜单\n`
+    msg+=`4.#发言榜周榜 : 查看当前群聊本周的发言榜单\n`
+    msg+=`5.#发言榜日榜 : 查看当前群聊本日的发言榜单\n`
     msg+=`----------\n`
     msg+=`主人可用:\n`
     msg+=`1."#清除发言榜单":清除当前群聊的发言记录\n`
     msg+=`2."#发言榜设置排行+大于0的数字":设置最后显示的榜单人数\n`
     msg+=`3."#发言榜设置转发+0/1":设置是否以转发消息的形式发送，防止刷屏\n`
-    msg+=`********************`
+    msg+=`注: 设置时请去除加号`
+    msg+=`**********************************`
     await e.reply(msg)
     return
   }
@@ -290,6 +398,9 @@ export class Rank extends plugin {
   }
 
   check(e){// 确保数据目录存在
+    if(!fs.existsSync(`./data/snots`)){
+      fs.mkdirSync(`./data/snots`);
+    }
     let filePath=`./data/snots/${e.group_id}`
     if (!fs.existsSync(filePath)) {
       fs.mkdirSync(filePath);
@@ -298,6 +409,7 @@ export class Rank extends plugin {
         "rand" : 20
       }
       fs.writeFileSync(`${filePath}/settings.json`,JSON.stringify(settings,null,4),'utf-8')
+      fs.writeFileSync(`${filePath}/snots.json`,JSON.stringify([],null,4),'utf-8')
     }else if (!fs.existsSync(`${filePath}/settings.json`)) { //迁移时无settings.json文件自动创建
       settings={
         "isArr" : 0,
@@ -379,6 +491,7 @@ export class Rank extends plugin {
           "year": time.year,
           "month": time.month,
           "day": time.day,
+          "week": time.week,
           "number": 1
         }
         userRecord.history.push(newHistory)
@@ -399,6 +512,7 @@ export class Rank extends plugin {
             "year":time.year,
             "month":time.month,
             "day":time.day,
+            "week":time.week,
             "number":1
           }
         ] 
@@ -449,6 +563,7 @@ export class Rank extends plugin {
     // 检查文件是否存在，如果存在则直接删除
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(`${filePath}/snots.json`)
+      fs.writeFileSync(`${filePath}/snots.json`,JSON.stringify([],null,4),'utf-8') //复原
       await e.reply('当前群聊发言榜单已清除！')
     } else {
       await e.reply('当前群聊发言榜单为空，无需清除！')
@@ -464,13 +579,16 @@ export class Rank extends plugin {
     let hours = ('0' + currentDate.getHours()).slice(-2);
     let minutes = ('0' + currentDate.getMinutes()).slice(-2);
     let seconds = ('0' + currentDate.getSeconds()).slice(-2);
+    let week= this.autoGetWeekOfMonth(currentDate) //获取第几周
+
     let time={
       "year":Number(year),
       "month":Number(month),
       "day":Number(day),
       "hours":Number(hours),
       "minutes":Number(minutes),
-      "seconds":Number(seconds)
+      "seconds":Number(seconds),
+      "week":Number(week)
     }
     return time
   }
