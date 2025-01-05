@@ -16,7 +16,7 @@ export class Rank extends plugin {
       rule: [
         {
           reg: '^(#?水群榜|#?发言榜|#?B话榜)$',
-          fnc: 'showMessageRanking'
+          fnc: 'fullRank'
         },
         {
           reg: '^#清除发言榜单$',
@@ -419,7 +419,7 @@ export class Rank extends plugin {
     }
   }
 
-  async showMessageRanking(e) {
+  async fullRank(e) {
     const data = this.readData(e,e.group_id);
 
     if (data.length === 0) {
@@ -435,7 +435,7 @@ export class Rank extends plugin {
     let msg = [`群名: ${groupname}\n群号: ${groupid}\n发言总数: ${totalMessages}\n━━━━━━━━━━━━━━\n本群发言榜:\n`];
 
     // 排序并截取前30名
-    data.sort((a, b) => b.number - a.number);
+    data.sort((a, b) => b.total - a.total);
     var topUsers
     topUsers = data.slice(0, settings.rand);
     

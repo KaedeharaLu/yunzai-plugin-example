@@ -100,7 +100,7 @@ export class UAPI extends plugin {
 
     async ping(e) {
         let tip = 'ping'
-        const host = e.raw_message.slice(6) //获得ping的host
+        const host = e.raw_message.slice(6).trim() //获得ping的host
         const url = `${api}${tip}?host=${host}` //拼接api地址
         let data = {} //定义返回数据为空
         let ifStop=0
@@ -135,9 +135,9 @@ export class UAPI extends plugin {
         msg += `host: ${data.host}\n`
         msg += ` ip : ${data.ip}\n`
         msg += `----------\n`
-        msg += `最大延迟: ${data.max}\n`
-        msg += `最小延迟: ${data.min}\n`
-        msg += `平均延迟: ${data.avg}\n`
+        msg += `最大延迟: ${data.max}ms\n`
+        msg += `最小延迟: ${data.min}ms\n`
+        msg += `平均延迟: ${data.avg}ms\n`
 
         await e.reply(msg, true)
     }
