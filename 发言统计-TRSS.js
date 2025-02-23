@@ -1,10 +1,16 @@
 import fs from 'fs';
 import puppeteer from 'puppeteer';
 
+let defaultSettings = {
+  "isArr": 0,
+  "rand": 20,
+  "ifSendPic": 1 // 新增设置，默认为1，发送图片
+};
+
 let settings = {
   "isArr": 0,
   "rand": 20,
-  "ifSendPic": 0 // 新增设置，默认为0，不发送图片
+  "ifSendPic": 1
 };
 
 Bot.on("message.group", e => {
@@ -108,7 +114,7 @@ export class Rank extends plugin {
     let groupid = e.group_id;
 
     // 构建动态HTML
-    const htmlTemplate = `
+    let htmlTemplate = `
 <html>
   <head>
     <style>
@@ -143,6 +149,18 @@ export class Rank extends plugin {
       .user-item:hover {
         transform: translateX(10px);
       }
+      .user-item-true {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        transition: transform 0.2s;
+        background-color: #f0e6ff;
+        border-radius: 12px;
+      }
+      .user-item-true:hover {
+        transform: translateX(10px);
+      }
       .rank {
         width: 50px;
         font-size: 24px;
@@ -164,14 +182,27 @@ export class Rank extends plugin {
         justify-content: space-between;
         align-items: center;
       }
+      /* 新增样式 */
+      .name-date {
+        display: flex;
+        flex-direction: column;
+        margin-top: -6px; /* 上移昵称 */
+      }
       .nickname {
         font-size: 20px;
         color: #34495e;
         font-weight: 500;
+        line-height: 1.2;
+      }
+      .date {
+        color: #666;
+        font-size: 14px;
+        margin-top: 4px;
       }
       .stats {
         text-align: right;
         font-size: 18px;
+        min-width: 120px;
       }
       .count {
         color: #e74c3c;
@@ -181,30 +212,92 @@ export class Rank extends plugin {
         color: #27ae60;
         font-size: 16px;
       }
+      .separator {
+        height: 20px;  /* 增加主榜和未上榜用户之间的空白 */
+      }
     </style>
   </head>
   <body>
     <div class="title">${groupname}[${groupid}]</div>
     <div class="title">${title}</div>
     <div class="user-list">
-      ${topUsers.map((user, index) => `
-        <div class="user-item">
+`;
+
+    let trigger=0 //用于记录是否上榜
+    for(let i=0;i<=topUsers.length-1;i++){
+      let user=topUsers[i]
+      if(user.user_id==e.user_id){ //上榜则把trigger设置为1
+        trigger=1
+      }
+      let LastDate
+      if(user.LastDate){
+        LastDate=user.LastDate
+      }else{
+        const theLast=user.history[user.history.length-1]
+        LastDate=`${theLast.year}-${theLast.month}-${theLast.day}`
+      }
+      
+      const userItemClass = user.user_id == e.user_id ? "user-item-true" : "user-item";
+      
+      htmlTemplate += `
+        <div class="${userItemClass}">
+          <div class="rank">#${i + 1}</div>
+          <img class="avatar" src="https://q1.qlogo.cn/g?b=qq&nk=${user.user_id}&s=640" />
+          <div class="info">
+            <div class="name-date">
+              <div class="nickname">${user.nickname}</div>
+              <div class="date">最近发言: ${LastDate}</div>
+            </div>
+            <div class="stats">
+              <div class="count">${user.total} 次</div>
+              <div class="percentage">(${((user.total / totalMessages) * 100).toFixed(2)}%)</div>
+            </div>
+          </div>
+        </div>`
+    }
+
+    if(!trigger){ //trigger为1代表上榜，不需要执行下面的逻辑，所以加一个！
+      let user,index
+      for(let i=0;i<=data.length-1;i++){ //遍历
+        if(data[i].user_id==e.user_id){
+          user=data[i]
+          index=i
+          break
+        }
+      }
+
+      let LastDate
+      if(user.LastDate){
+        LastDate=user.LastDate
+      }else{
+        const theLast=user.history[user.history.length-1]
+        LastDate=`${theLast.year}-${theLast.month}-${theLast.day}`
+      }
+      htmlTemplate+=`
+    </div> <!-- 关闭主排行 -->
+    <div class="separator"></div>
+    <div class="user-list">
+      <div class="user-item-true">
           <div class="rank">#${index + 1}</div>
           <img class="avatar" src="https://q1.qlogo.cn/g?b=qq&nk=${user.user_id}&s=640" />
           <div class="info">
-            <span class="nickname">${user.nickname}</span>
+            <div class="name-date">
+              <div class="nickname">${user.nickname}</div>
+              <div class="date">最近发言: ${LastDate}</div>
+            </div>
             <div class="stats">
               <div class="count">${user.total} 次</div>
               <div class="percentage">(${((user.total / totalMessages) * 100).toFixed(2)}%)</div>
             </div>
           </div>
         </div>
-      `).join('')}
-    </div>
-  </body>
-</html>
-`;
+      </div>
+    </div>`
+    }
 
+    htmlTemplate+=`
+  </body>
+</html>`;
     // 启动浏览器
     const browser = await puppeteer.launch({
       headless: "new",
@@ -315,7 +408,8 @@ export class Rank extends plugin {
         let temp = {
           "user_id": data[i].user_id,
           "nickname": "",
-          "total": sum
+          "total": sum,
+          "LastDate": `${data[i].history[data[i].history.length-1].year}-${data[i].history[data[i].history.length-1].month}-${data[i].history[data[i].history.length-1].day}`
         };
         if ((!data[i].nickname) || (data[i].nickname.trim() == '')) {
           temp.nickname = `[${data[i].user_id}]`;
@@ -384,7 +478,8 @@ export class Rank extends plugin {
         let temp = {
           "user_id": data[i].user_id,
           "nickname": "",
-          "total": sum
+          "total": sum,
+          "LastDate": `${data[i].history[data[i].history.length-1].year}-${data[i].history[data[i].history.length-1].month}-${data[i].history[data[i].history.length-1].day}`
         };
         if ((!data[i].nickname) || (data[i].nickname.trim() == '')) {
           temp.nickname = `[${data[i].user_id}]`;
@@ -447,7 +542,8 @@ export class Rank extends plugin {
         let temp = {
           "user_id": data[i].user_id,
           "nickname": "",
-          "total": thisHistory.number
+          "total": thisHistory.number,
+          "LastDate": `today`
         };
         if ((!data[i].nickname) || (data[i].nickname.trim() == '')) {
           temp.nickname = `[${data[i].user_id}]`;
@@ -661,20 +757,10 @@ export class Rank extends plugin {
     let filePath = `./data/snots/${e.group_id}`
     if (!fs.existsSync(filePath)) {
       fs.mkdirSync(filePath);
-      settings = {
-        "isArr": 0,
-        "rand": 20,
-        "ifSendPic": 0
-      }
-      fs.writeFileSync(`${filePath}/settings.json`, JSON.stringify(settings, null, 4), 'utf-8')
+      fs.writeFileSync(`${filePath}/settings.json`, JSON.stringify(defaultSettings, null, 4), 'utf-8')
       fs.writeFileSync(`${filePath}/snots.json`, JSON.stringify([], null, 4), 'utf-8')
     } else if (!fs.existsSync(`${filePath}/settings.json`)) { //迁移时无settings.json文件自动创建
-      settings = {
-        "isArr": 0,
-        "rand": 20,
-        "ifSendPic": 0
-      }
-      fs.writeFileSync(`${filePath}/settings.json`, JSON.stringify(settings, null, 4), 'utf-8')
+      fs.writeFileSync(`${filePath}/settings.json`, JSON.stringify(defaultSettings, null, 4), 'utf-8')
     }
   }
 
@@ -690,14 +776,17 @@ export class Rank extends plugin {
     }
 
     let nickname = ""
-    if (e.group_id) {
+    if (e.group_id!=undefined && e.group_id!=null) {
       nickname = e.member.card || e.member.nickname
+      if(nickname==undefined || nickname==null){
+        nickname=e.group_id
+      }
     } else {
       nickname = e.user_id
     }
 
     // 查找当前用户是否已经有记录
-    let userRecord = data.find(item => item.user_id === e.user_id);
+    let userRecord = data.find(item => item.user_id == e.user_id);
     const time = this.getTime()
 
     if (userRecord) {
@@ -717,7 +806,10 @@ export class Rank extends plugin {
         userRecord.history.push(newHistory)
       }
 
-      userRecord.nickname = nickname;
+      // userRecord.nickname = nickname;
+      if (userRecord.nickname != nickname) {
+        userRecord.nickname = nickname;
+      }
 
     } else {
       // 如果没有记录，则添加新用户记录
@@ -761,12 +853,7 @@ export class Rank extends plugin {
         return JSON.parse(fileContent);
       } else {
         fs.mkdirSync(filePath)
-        settings = {
-          "isArr": 0,
-          "rand": 20,
-          "ifSendPic": 0
-        }
-        fs.writeFileSync(`${filePath}/settings.json`, JSON.stringify(settings, null, 4), 'utf-8')
+        fs.writeFileSync(`${filePath}/settings.json`, JSON.stringify(defaultSettings, null, 4), 'utf-8')
       }
 
       return []; // 文件不存在则返回空数组
